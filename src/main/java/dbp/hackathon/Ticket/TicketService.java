@@ -7,6 +7,7 @@ import dbp.hackathon.Funcion.FuncionRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Service
 public class TicketService {
@@ -19,6 +20,12 @@ public class TicketService {
 
     @Autowired
     private FuncionRepository funcionRepository;
+
+    @Autowired
+    private EmailService emailService;
+
+    @Autowired
+    private QrService qrService;
 
     public Ticket createTicket(Long estudianteId, Long funcionId, Integer cantidad) {
         Estudiante estudiante = estudianteRepository.findById(estudianteId).orElse(null);
@@ -35,7 +42,16 @@ public class TicketService {
         ticket.setFechaCompra(LocalDateTime.now());
         ticket.setQr("GENERATED-QR-CODE");
 
-        return ticketRepository.save(ticket);
+        String qrCodeUrl = qrService.generateQRCode(ticket.getId().toString());
+        ticket.setQr(qrCodeUrl); // Asignar el QR al ticket
+
+        // Guardar el ticket en la base de datos
+        Ticket savedTicket = ticketRepository.save(ticket);
+
+        // Enviar correo de confirmación con el QR
+        emailService.sendTicketConfirmationEmail(savedTicket.getEstudiante().getEmail(), savedTicket, qrCodeUrl);
+
+        return savedTicket;
     }
 
     public Ticket findById(Long id) {
@@ -63,4 +79,10 @@ public class TicketService {
         ticketRepository.save(ticket);
     }
 
+    public double calcularRecaudacionPorFuncion(Long funcionId) {
+        List<Ticket> tickets = ticketRepository.findByFuncionId(funcionId);
+        return tickets.stream()
+                .mapToDouble(ticket -> ticket.getFuncion().getPrecio() * ticket.getCantidad())
+                .sum();
+    }
 }
