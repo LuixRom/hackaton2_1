@@ -1,5 +1,6 @@
 package dbp.hackathon.Ticket;
 
+import Email.domain.EmailService;
 import dbp.hackathon.Estudiante.Estudiante;
 import dbp.hackathon.Estudiante.EstudianteRepository;
 import dbp.hackathon.Funcion.Funcion;
@@ -43,12 +44,10 @@ public class TicketService {
         ticket.setQr("GENERATED-QR-CODE");
 
         String qrCodeUrl = qrService.generateQRCode(ticket.getId().toString());
-        ticket.setQr(qrCodeUrl); // Asignar el QR al ticket
+        ticket.setQr(qrCodeUrl);
 
-        // Guardar el ticket en la base de datos
         Ticket savedTicket = ticketRepository.save(ticket);
 
-        // Enviar correo de confirmación con el QR
         emailService.sendTicketConfirmationEmail(savedTicket.getEstudiante().getEmail(), savedTicket, qrCodeUrl);
 
         return savedTicket;
