@@ -11,9 +11,19 @@ public class EmailListener {
     @Autowired
     private EmailService emailService;
 
+
     @EventListener
     @Async
-    public void handleHelloEmailEvent(EmailEvent event) {
-        emailService.sendMessage(event.getEmail(), event.getSubject(), event.getContent());
+    public void handleEmailEvent(EmailEvent event) {
+        emailService.sendHtmlMessage(
+                event.getEmail(),
+                event.getSubject(),
+                event.getNombre(),
+                event.getNombrePelicula(),
+                event.getFechaFuncion(),
+                event.getCantidadEntradas(),
+                event.getPrecioTotal(),
+                event.getQrUrl()
+        );
     }
 }
