@@ -38,7 +38,7 @@ public class TicketService {
             throw new IllegalStateException("Estudiante or Funcion not found!");
         }
 
-
+        // Crear el ticket sin el código QR todavía
         Ticket ticket = new Ticket();
         ticket.setEstudiante(estudiante);
         ticket.setFuncion(funcion);
@@ -46,15 +46,17 @@ public class TicketService {
         ticket.setEstado(Estado.VENDIDO);
         ticket.setFechaCompra(LocalDateTime.now());
 
-
-
-        String qrUrl = generateQrCode(ticket.getId());
-        ticket.setQr(qrUrl);
-
-
+        // Guardar el ticket para obtener un ID asignado
         Ticket savedTicket = ticketRepository.save(ticket);
 
+        // Ahora que el ticket tiene un ID, generar el código QR
+        String qrUrl = generateQrCode(savedTicket.getId());
+        savedTicket.setQr(qrUrl);
 
+        // Guardar nuevamente el ticket con el QR asignado
+        ticketRepository.save(savedTicket);
+
+        // Publicar el evento de correo o cualquier otra lógica adicional
         publishEmailEvent(estudiante, funcion, savedTicket, qrUrl);
 
         return savedTicket;
@@ -91,17 +93,8 @@ public class TicketService {
 
 
         eventPublisher.publishEvent(emailEvent);
-=======
-        String qrCodeUrl = qrService.generateQRCode(ticket.getId().toString());
-        ticket.setQr(qrCodeUrl); // Asignar el QR al ticket
+        ticketRepository.save(ticket);
 
-        // Guardar el ticket en la base de datos
-        Ticket savedTicket = ticketRepository.save(ticket);
-
-        // Enviar correo de confirmación con el QR
-        emailService.sendTicketConfirmationEmail(savedTicket.getEstudiante().getEmail(), savedTicket, qrCodeUrl);
-
-        return savedTicket;
     }
 
     public Ticket findById(Long id) {
