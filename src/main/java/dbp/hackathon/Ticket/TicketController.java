@@ -52,4 +52,11 @@ public class TicketController {
     public ResponseEntity<Iterable<Ticket>> getAllTickets() {
         return ResponseEntity.ok(ticketService.findAll());
     }
+
+    @GetMapping("/recaudacion/{funcionId}")
+    public ResponseEntity<Double> calcularRecaudacion(@PathVariable Long funcionId) {
+        double recaudacionTotal = ticketService.calcularRecaudacionPorFuncion(funcionId);
+        return ResponseEntity.ok(recaudacionTotal);
+    }
+
 }
