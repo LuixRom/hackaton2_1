@@ -62,7 +62,6 @@ public class TicketService {
         return savedTicket;
     }
 
-
     private String generateQrCode(Long ticketId) {
         try {
             return "https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=" + URLEncoder.encode(ticketId.toString(), "UTF-8");
